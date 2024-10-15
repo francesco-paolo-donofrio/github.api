@@ -8,32 +8,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = __importDefault(require("axios"));
-require("bootstrap/dist/css/bootstrap.min.css");
-let string = 'sciao belo';
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded and parsed');
     const searchBar = document.getElementById('search');
     const searchBtn = document.getElementById('searchBtn');
     const searchTypeToggle = document.getElementById('searchType');
     const appDiv = document.getElementById('app');
+    if (!searchBar || !searchBtn || !searchTypeToggle || !appDiv) {
+        console.error('One or more elements not found');
+        return;
+    }
+    console.log('All elements found');
     searchBtn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log('Search button clicked');
         const search = searchBar.value.trim();
         const searchType = searchTypeToggle.value;
-        console.log('Search button clicked. Search term:', search);
+        console.log(`Search term: "${search}", Type: ${searchType}`);
         if (search.length >= 3) {
             appDiv.innerHTML = '<p>Loading...</p>';
             try {
-                const response = yield axios_1.default.get(`https://api.github.com/search/${searchType}`, {
-                    params: {
-                        q: search,
-                        per_page: 20
-                    }
-                });
-                const searchResults = response.data.items || [];
+                console.log(`Fetching: https://api.github.com/search/${searchType}?q=${encodeURIComponent(search)}&per_page=20`);
+                const response = yield fetch(`https://api.github.com/search/${searchType}?q=${encodeURIComponent(search)}&per_page=20`);
+                console.log('Response received:', response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = yield response.json();
+                console.log('Data parsed:', data);
+                const searchResults = data.items || [];
                 console.log('Search results:', searchResults);
                 appDiv.innerHTML = '';
                 if (searchResults.length === 0) {
@@ -41,27 +43,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 searchResults.forEach((item) => {
+                    console.log('Processing item:', item);
                     const card = document.createElement('div');
                     card.className = 'wrapper';
                     if (searchType === 'repositories') {
-                        const repo = item;
                         card.innerHTML = `
-                            <h1 class="repo-name">${repo.name}</h1>
-                            <p class="repo-description">${repo.description || 'No description available.'}</p>
-                            <p class="repo-stars">Stars: ${repo.stargazers_count}</p>
+                            <h1 class="repo-name">${item.name}</h1>
+                            <p class="repo-description">${item.description || 'No description available.'}</p>
+                            <p class="repo-stars">Stars: ${item.stargazers_count}</p>
                             <div class="button-wrapper">
-                                <a href="${repo.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
+                                <a href="${item.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
                             </div>
                         `;
                     }
                     else if (searchType === 'users') {
-                        const user = item;
                         card.innerHTML = `
-                            <img src="${user.avatar_url}" alt="${user.login}" class="avatar-image">
-                            <h1 class="repo-name">${user.login}</h1>
-                            <p class="repo-description">${user.type}</p>
+                            <img src="${item.avatar_url}" alt="${item.login}" class="avatar-image">
+                            <h1 class="repo-name">${item.login}</h1>
+                            <p class="repo-description">${item.type}</p>
                             <div class="button-wrapper">
-                                <a href="${user.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
+                                <a href="${item.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
                             </div>
                         `;
                     }
