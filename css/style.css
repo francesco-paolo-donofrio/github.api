@@ -21,6 +21,13 @@
   display: none;
 }
 
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .searchBtn {
   cursor: pointer;
   padding: 10px;
@@ -43,9 +50,9 @@ body {
 .banner-image {
   background-position: center;
   background-size: cover;
-  height: 80px;
-  width: 120px;
-  border-radius: 12px;
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.255)
 }
 

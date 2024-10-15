@@ -34,9 +34,9 @@ function displayResults(items: any[], type: string) {
     itemElement.classList.add('card');
     
     if (type === 'repositories') {
-      itemElement.innerHTML = `<div class="banner-image">${item.blobs_url}</div><strong>Repo:</strong> ${item.name}<br /><strong>Stars:</strong> ${item.stargazers_count}`;
+      itemElement.innerHTML = `<div class="banner-image"><img src="${item.owner.avatar_url}" /></div><strong>Repo:</strong> ${item.name}<br /><strong>Stars:</strong> ${item.stargazers_count}`;
     } else {
-      itemElement.innerHTML = `<div class="banner-image">${item.blobs_url}</div><strong>User:</strong> ${item.login}<br /><strong>Profile:</strong> <a href="${item.html_url}" target="_blank">View</a>`;
+      itemElement.innerHTML = `<div class="banner-image">${item.avatar_url}</div><strong>User:</strong> ${item.login}<br /><strong>Profile:</strong> <a href="${item.html_url}" target="_blank">View</a>`;
     }
 
     resultsContainer?.appendChild(itemElement);
