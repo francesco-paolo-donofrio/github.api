@@ -3,32 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css">
   <title>GitHub API Search</title>
-  <style>
-    /* Basic styles */
-    #results { display: flex; flex-wrap: wrap; gap: 10px; }
-    .card { border: 1px solid #ccc; padding: 10px; border-radius: 5px; width: 200px; }
-    #loader { display: none; }
-  </style>
 </head>
 <body>
   <h1>GitHub API Search</h1>
   
-  <input type="text" id="search-input" placeholder="Enter search term" />
+  <input type="text" id="search-input" class="searchBar" placeholder="Enter search term" />
   
   <select id="search-type">
     <option value="repositories">Repositories</option>
     <option value="users">Users/Organizations</option>
   </select>
 
-  <button id="search-btn">Cerca</button>
+  <button id="search-btn" class="searchBtn">Cerca</button>
 
   <div id="loader">Loading...</div>
 
   <div id="results"></div>
 
-  <button id="prev-btn">Previous</button>
-  <button id="next-btn">Next</button>
+  <button id="prev-btn" class="searchBtn">Previous</button>
+  <button id="next-btn" class="searchBtn">Next</button>
 
   <script src="./dist/index.js"></script>
 </body>

@@ -38,10 +38,10 @@ function displayResults(items, type) {
         const itemElement = document.createElement('div');
         itemElement.classList.add('card');
         if (type === 'repositories') {
-            itemElement.innerHTML = `<strong>Repo:</strong> ${item.name}<br /><strong>Stars:</strong> ${item.stargazers_count}`;
+            itemElement.innerHTML = `<div class="banner-image">${item.blobs_url}</div><strong>Repo:</strong> ${item.name}<br /><strong>Stars:</strong> ${item.stargazers_count}`;
         }
         else {
-            itemElement.innerHTML = `<strong>User:</strong> ${item.login}<br /><strong>Profile:</strong> <a href="${item.html_url}" target="_blank">View</a>`;
+            itemElement.innerHTML = `<div class="banner-image">${item.blobs_url}</div><strong>User:</strong> ${item.login}<br /><strong>Profile:</strong> <a href="${item.html_url}" target="_blank">View</a>`;
         }
         resultsContainer === null || resultsContainer === void 0 ? void 0 : resultsContainer.appendChild(itemElement);
     });
