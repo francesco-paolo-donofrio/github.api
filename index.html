@@ -1,31 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
-    <title>Github Search</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub API Search</title>
+  <style>
+    /* Basic styles */
+    #results { display: flex; flex-wrap: wrap; gap: 10px; }
+    .card { border: 1px solid #ccc; padding: 10px; border-radius: 5px; width: 200px; }
+    #loader { display: none; }
+  </style>
 </head>
 <body>
-    <div id="searchBar">
-        <select id="searchType">
-            <option value="repositories">Repositories</option>
-            <option value="users">Users/Organizations</option>
-        </select>
-        <input type="text" id="search" placeholder="Search GitHub">
-        <button id="searchBtn" type="button">Search</button>
-    </div>
-    <div id="app">
-        <div class="" id="repoCardTemplate">
-            <div class="wrapper">
-                <h1 class="repo-name"></h1>
-                <p class="repo-description"></p>
-                <p class="repo-stars"></p>
-                <div class="button-wrapper">
-                    <a href="#" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
-                </div>
-            </div>
-        </div>
-    </div>
+  <h1>GitHub API Search</h1>
+  
+  <input type="text" id="search-input" placeholder="Enter search term" />
+  
+  <select id="search-type">
+    <option value="repositories">Repositories</option>
+    <option value="users">Users/Organizations</option>
+  </select>
+
+  <button id="search-btn">Cerca</button>
+
+  <div id="loader">Loading...</div>
+
+  <div id="results"></div>
+
+  <button id="prev-btn">Previous</button>
+  <button id="next-btn">Next</button>
+
+  <script src="./dist/index.js"></script>
 </body>
 </html>

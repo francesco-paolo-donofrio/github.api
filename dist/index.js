@@ -8,75 +8,79 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded and parsed');
-    const searchBar = document.getElementById('search');
-    const searchBtn = document.getElementById('searchBtn');
-    const searchTypeToggle = document.getElementById('searchType');
-    const appDiv = document.getElementById('app');
-    if (!searchBar || !searchBtn || !searchTypeToggle || !appDiv) {
-        console.error('One or more elements not found');
-        return;
-    }
-    console.log('All elements found');
-    searchBtn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Search button clicked');
-        const search = searchBar.value.trim();
-        const searchType = searchTypeToggle.value;
-        console.log(`Search term: "${search}", Type: ${searchType}`);
-        if (search.length >= 3) {
-            appDiv.innerHTML = '<p>Loading...</p>';
-            try {
-                console.log(`Fetching: https://api.github.com/search/${searchType}?q=${encodeURIComponent(search)}&per_page=20`);
-                const response = yield fetch(`https://api.github.com/search/${searchType}?q=${encodeURIComponent(search)}&per_page=20`);
-                console.log('Response received:', response);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = yield response.json();
-                console.log('Data parsed:', data);
-                const searchResults = data.items || [];
-                console.log('Search results:', searchResults);
-                appDiv.innerHTML = '';
-                if (searchResults.length === 0) {
-                    appDiv.innerHTML = '<p>No results found.</p>';
-                    return;
-                }
-                searchResults.forEach((item) => {
-                    console.log('Processing item:', item);
-                    const card = document.createElement('div');
-                    card.className = 'wrapper';
-                    if (searchType === 'repositories') {
-                        card.innerHTML = `
-                            <h1 class="repo-name">${item.name}</h1>
-                            <p class="repo-description">${item.description || 'No description available.'}</p>
-                            <p class="repo-stars">Stars: ${item.stargazers_count}</p>
-                            <div class="button-wrapper">
-                                <a href="${item.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
-                            </div>
-                        `;
-                    }
-                    else if (searchType === 'users') {
-                        card.innerHTML = `
-                            <img src="${item.avatar_url}" alt="${item.login}" class="avatar-image">
-                            <h1 class="repo-name">${item.login}</h1>
-                            <p class="repo-description">${item.type}</p>
-                            <div class="button-wrapper">
-                                <a href="${item.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
-                            </div>
-                        `;
-                    }
-                    appDiv.appendChild(card);
-                });
-            }
-            catch (error) {
-                console.error(`Error fetching ${searchType}:`, error);
-                appDiv.innerHTML = '<p>An error occurred. Please try again.</p>';
-            }
+var _a, _b, _c, _d;
+let currentPage = 1;
+const resultsContainer = document.getElementById('results');
+const loader = document.getElementById('loader');
+function search(query_1, type_1) {
+    return __awaiter(this, arguments, void 0, function* (query, type, page = 1) {
+        let url = '';
+        if (type === 'repositories') {
+            url = `https://api.github.com/search/repositories?q=${query}&page=${page}`;
         }
         else {
-            appDiv.innerHTML = "<p>Please enter at least 3 characters.</p>";
+            url = `https://api.github.com/search/users?q=${query}&page=${page}`;
         }
-    }));
+        loader.style.display = 'block';
+        const response = yield fetch(url);
+        const data = yield response.json();
+        loader.style.display = 'none';
+        return data.items;
+    });
+}
+function displayResults(items, type) {
+    resultsContainer.innerHTML = '';
+    if (items.length === 0) {
+        resultsContainer.textContent = 'No results found.';
+        return;
+    }
+    items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('card');
+        if (type === 'repositories') {
+            itemElement.innerHTML = `<strong>Repo:</strong> ${item.name}<br /><strong>Stars:</strong> ${item.stargazers_count}`;
+        }
+        else {
+            itemElement.innerHTML = `<strong>User:</strong> ${item.login}<br /><strong>Profile:</strong> <a href="${item.html_url}" target="_blank">View</a>`;
+        }
+        resultsContainer === null || resultsContainer === void 0 ? void 0 : resultsContainer.appendChild(itemElement);
+    });
+}
+function debounce(fn, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+}
+const handleSearch = () => __awaiter(void 0, void 0, void 0, function* () {
+    const query = document.getElementById('search-input').value;
+    const searchType = document.getElementById('search-type').value;
+    if (query.length >= 3) {
+        const results = yield search(query, searchType, currentPage);
+        displayResults(results, searchType);
+    }
+    else {
+        alert('Please enter at least 3 characters for the search.');
+    }
 });
+(_a = document.getElementById('search-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', handleSearch);
+const debouncedSearch = debounce(handleSearch, 700);
+(_b = document.getElementById('search-input')) === null || _b === void 0 ? void 0 : _b.addEventListener('input', debouncedSearch);
+(_c = document.getElementById('next-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+    const query = document.getElementById('search-input').value;
+    const searchType = document.getElementById('search-type').value;
+    currentPage++;
+    const results = yield search(query, searchType, currentPage);
+    displayResults(results, searchType);
+}));
+(_d = document.getElementById('prev-btn')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+    if (currentPage > 1) {
+        currentPage--;
+        const query = document.getElementById('search-input').value;
+        const searchType = document.getElementById('search-type').value;
+        const results = yield search(query, searchType, currentPage);
+        displayResults(results, searchType);
+    }
+}));
 //# sourceMappingURL=index.js.map

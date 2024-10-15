@@ -1,84 +1,95 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded and parsed');
-    const searchBar = document.getElementById('search') as HTMLInputElement;
-    const searchBtn = document.getElementById('searchBtn') as HTMLButtonElement;
-    const searchTypeToggle = document.getElementById('searchType') as HTMLSelectElement;
-    const appDiv = document.getElementById('app') as HTMLDivElement;
+let currentPage = 1;
+const resultsContainer = document.getElementById('results');
+const loader = document.getElementById('loader');
 
-    if (!searchBar || !searchBtn || !searchTypeToggle || !appDiv) {
-        console.error('One or more elements not found');
-        return;
+// Function to make the GitHub API call
+async function search(query: string, type: string, page: number = 1) {
+  let url = '';
+  if (type === 'repositories') {
+    url = `https://api.github.com/search/repositories?q=${query}&page=${page}`;
+  } else {
+    url = `https://api.github.com/search/users?q=${query}&page=${page}`;
+  }
+  
+  loader!.style.display = 'block'; // Show loader while waiting for results
+
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  loader!.style.display = 'none'; // Hide loader when results are ready
+
+  return data.items; // Array of repositories or users
+}
+
+// Function to display repositories or users/organizations
+function displayResults(items: any[], type: string) {
+  resultsContainer!.innerHTML = ''; // Clear previous results
+  if (items.length === 0) {
+    resultsContainer!.textContent = 'No results found.';
+    return;
+  }
+  
+  items.forEach(item => {
+    const itemElement = document.createElement('div');
+    itemElement.classList.add('card');
+    
+    if (type === 'repositories') {
+      itemElement.innerHTML = `<strong>Repo:</strong> ${item.name}<br /><strong>Stars:</strong> ${item.stargazers_count}`;
+    } else {
+      itemElement.innerHTML = `<strong>User:</strong> ${item.login}<br /><strong>Profile:</strong> <a href="${item.html_url}" target="_blank">View</a>`;
     }
 
-    console.log('All elements found');
+    resultsContainer?.appendChild(itemElement);
+  });
+}
 
-    searchBtn.addEventListener('click', async () => {
-        console.log('Search button clicked');
-        const search = searchBar.value.trim();
-        const searchType = searchTypeToggle.value;
+// Debounce function to delay the search by 700ms
+function debounce(fn: Function, delay: number) {
+  let timer: NodeJS.Timeout;
+  return function(...args: any[]) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
 
-        console.log(`Search term: "${search}", Type: ${searchType}`);
+// Function to handle the search button click event
+const handleSearch = async () => {
+  const query = (document.getElementById('search-input') as HTMLInputElement).value;
+  const searchType = (document.getElementById('search-type') as HTMLSelectElement).value;
 
-        if (search.length >= 3) {
-            appDiv.innerHTML = '<p>Loading...</p>';
+  if (query.length >= 3) {
+    const results = await search(query, searchType, currentPage);
+    displayResults(results, searchType);
+  } else {
+    alert('Please enter at least 3 characters for the search.');
+  }
+};
 
-            try {
-                console.log(`Fetching: https://api.github.com/search/${searchType}?q=${encodeURIComponent(search)}&per_page=20`);
-                const response = await fetch(`https://api.github.com/search/${searchType}?q=${encodeURIComponent(search)}&per_page=20`);
-                
-                console.log('Response received:', response);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Data parsed:', data);
+// Attach the search function to the search button click
+document.getElementById('search-btn')?.addEventListener('click', handleSearch);
 
-                const searchResults = data.items || [];
-                console.log('Search results:', searchResults);
+// Attach debounce to the input field for real-time search (Bonus 1)
+const debouncedSearch = debounce(handleSearch, 700);
+document.getElementById('search-input')?.addEventListener('input', debouncedSearch);
 
-                appDiv.innerHTML = '';
+// Pagination buttons
+document.getElementById('next-btn')?.addEventListener('click', async () => {
+  const query = (document.getElementById('search-input') as HTMLInputElement).value;
+  const searchType = (document.getElementById('search-type') as HTMLSelectElement).value;
 
-                if (searchResults.length === 0) {
-                    appDiv.innerHTML = '<p>No results found.</p>';
-                    return;
-                }
+  currentPage++;
+  const results = await search(query, searchType, currentPage);
+  displayResults(results, searchType);
+});
 
-                searchResults.forEach((item: any) => {
-                    console.log('Processing item:', item);
-                    const card = document.createElement('div');
-                    card.className = 'wrapper';
+document.getElementById('prev-btn')?.addEventListener('click', async () => {
+  if (currentPage > 1) {
+    currentPage--;
+    
+    const query = (document.getElementById('search-input') as HTMLInputElement).value;
+    const searchType = (document.getElementById('search-type') as HTMLSelectElement).value;
 
-                    if (searchType === 'repositories') {
-                        card.innerHTML = `
-                            <h1 class="repo-name">${item.name}</h1>
-                            <p class="repo-description">${item.description || 'No description available.'}</p>
-                            <p class="repo-stars">Stars: ${item.stargazers_count}</p>
-                            <div class="button-wrapper">
-                                <a href="${item.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
-                            </div>
-                        `;
-                    } else if (searchType === 'users') {
-                        card.innerHTML = `
-                            <img src="${item.avatar_url}" alt="${item.login}" class="avatar-image">
-                            <h1 class="repo-name">${item.login}</h1>
-                            <p class="repo-description">${item.type}</p>
-                            <div class="button-wrapper">
-                                <a href="${item.html_url}" target="_blank" class="btn outline repo-link">VIEW ON GITHUB</a>
-                            </div>
-                        `;
-                    }
-
-                    appDiv.appendChild(card);
-                });
-
-            } catch (error) {
-                console.error(`Error fetching ${searchType}:`, error);
-                appDiv.innerHTML = '<p>An error occurred. Please try again.</p>';
-            }
-        } else {
-            appDiv.innerHTML = "<p>Please enter at least 3 characters.</p>";
-        }
-    });
+    const results = await search(query, searchType, currentPage);
+    displayResults(results, searchType);
+  }
 });
